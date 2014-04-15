@@ -19,6 +19,6 @@ trait StringToInt
                 return $value;
             }
         }
-        throw new \Exception(sprintf('%s is can not convert to int.'), $string);
+        throw new \InvalidArgumentException(sprintf('%s can not convert to int.', $string));
     }
 }

@@ -59,6 +59,15 @@ class ClassHelperTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('San Francisco, CA', $person->getAddress());
     }
 
+    /**
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage eighteen can not convert to int.
+     */
+    public function testFailLoosePerson()
+    {
+        new LoosePerson(['name' => 120, 'age' => 'eighteen', 'address' => 'San Francisco, CA']);
+    }
+
     public function testEvent()
     {
         $date = new \DateTime();
