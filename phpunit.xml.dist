@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<phpunit bootstrap="test/bootstrap.php" backupGlobals="false">
+    <testsuite name="MagicSpice">
+        <directory>test</directory>
+    </testsuite>
+    <filter>
+        <blacklist>
+            <directory suffix=".php">vendor</directory>
+        </blacklist>
+        <whitelist>
+            <directory suffix=".php">src/class</directory>
+        </whitelist>
+    </filter>
+    <logging>
+        <log type="coverage-html" target="build/clover"/>
+        <log type="coverage-clover" target="build/clover.xml"/>
+        <log type="coverage-text" target="php://stdout" showUncoveredFiles="true"/>
+        <log type="junit" target="build/phpunit.xml"/>
+    </logging>
+</phpunit>
+

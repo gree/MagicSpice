@@ -1,0 +1,28 @@
+<?xml version="1.0"  encoding="UTF-8" ?>
+<?xml-model href="vendor/phing/phing/etc/phing-grammar.rng"
+        type="application/xml"
+        schematypens="http://relaxng.org/ns/structure/1.0" ?>
+<project name="athena" basedir="." default="full">
+    <target name="clean">
+        <delete dir="build"/>
+        <mkdir dir="build/coverage"/>
+    </target>
+
+    <target name="analyze">
+        <exec logoutput="true"
+              command="vendor/bin/phpcs --standard=PSR2 --report=full --report-checkstyle=build/checkstyle.xml --ignore=src/resource/ src test"/>
+        <exec logoutput="true" command="vendor/bin/phpcpd --log-pmd build/cpd.xml --exclude resource src test"/>
+    </target>
+
+    <target name="doc">
+        <exec logoutput="true" command="./vendor/bin/phpdoc.php -d src/class  -t build/phpdoc"/>
+    </target>
+
+    <target name="test">
+        <exec logoutput="true" command="vendor/bin/phpunit"/>
+    </target>
+
+    <target name="full" depends="clean,test,analyze,doc">
+    </target>
+</project>
+
