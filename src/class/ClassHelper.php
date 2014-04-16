@@ -98,21 +98,21 @@ trait ClassHelper
             }
 
             if (isset($validators[$class][$type])) {
-                $validator = $validators[$class][$type];
+                $validator = $validators[$class][$type]['function'];
+                $expected  = $validators[$class][$type]['expected'];
             } else {
                 $validator = "is_$type";
-                if (function_exists($validator)) {
-                    $validator = function ($value) use ($validator) {
-                        return !$validator($value);
-                    };
-                } else {
+                $expected = true;
+                if (!function_exists($validator)) {
                     $validator = [$this, 'validateType' . ucfirst($type)];
+                    $expected = false;
                 }
-                $validators[$class][$type] = $validator;
+                $validators[$class][$type]['function'] = $validator;
+                $validators[$class][$type]['expected'] = $expected;
             }
 
             // validate type
-            if (!($nullable && is_null($value)) && $validator($value)) {
+            if (!($nullable && is_null($value)) && $expected !== $validator($value)) {
                 $actualType = gettype($value);
                 $actualType = str_replace(['integer', 'double', 'boolean'], ['int', 'float', 'bool'], $actualType);
                 $key = "{$actualType} {$type}";
