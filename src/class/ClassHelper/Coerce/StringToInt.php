@@ -14,7 +14,7 @@ trait StringToInt
     {
         $maxLength = strlen(PHP_INT_MAX) - 1;
         if ($string === '0' || preg_match("/^-?[1-9][0-9]{0,$maxLength}$/", $string)) {
-            $value = eval("return $string;");
+            $value = $string + 0;
             if (is_int($value)) {
                 return $value;
             }
