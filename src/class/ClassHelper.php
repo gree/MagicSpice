@@ -6,7 +6,7 @@ trait ClassHelper
 {
     use ClassHelper\Accessor\Get;
 
-    protected $helperProperties;
+    protected $helperProperties = [];
 
     public function __construct(array $properties)
     {
@@ -43,12 +43,19 @@ trait ClassHelper
         static $meta = [];
         static $converters = [];
         static $validators = [];
+        static $mutualConditions = [];
 
         $class = get_class($this);
         if (!isset($meta[$class])) {
             $meta[$class] = [];
             $converters[$class] = [];
             $validators[$class] = [];
+
+            $validator = [$this, 'validateMutualCondition'];
+            $fallback = [$this, 'fallbackMutualCondition'];
+            $mutualConditions[$class]['validator'] = is_callable($validator) ? $validator : null;
+            $mutualConditions[$class]['fallback'] = is_callable($fallback) ? $fallback : null;
+
             $self = new \ReflectionClass($this);
             $aliases = [$self->getTraitAliases()];
             $parent = $self->getParentClass();
@@ -87,7 +94,7 @@ trait ClassHelper
                 }
 
                 if ($nullable) {
-                    $this->helperProperties[$property] = null;
+                    $properties[$property] = null;
                 } else {
                     $message = sprintf('%s::%s must be defined.', __CLASS__, $property);
                     throw new \InvalidArgumentException($message);
@@ -177,7 +184,35 @@ trait ClassHelper
                 }
             }
 
-            $this->helperProperties[$property] = $value;
+            $properties[$property] = $value;
         }
+
+        if ($mutualConditions[$class]['validator']) {
+            $exception = null;
+            try {
+                $result = $mutualConditions[$class]['validator']($properties);
+            } catch (\Exception $exception) {
+                $result = $exception;
+            }
+
+            if ($result) {
+                if ($mutualConditions[$class]['fallback']) {
+                    $properties = $mutualConditions[$class]['fallback']($properties, $result);
+                } else {
+                    if ($exception) {
+                        throw $exception;
+                    }
+
+                    $message = sprintf(
+                        "invalid condition at %s.\nproperties %s",
+                        __CLASS__,
+                        json_encode($properties)
+                    );
+                    throw new \InvalidArgumentException($message);
+                }
+            }
+        }
+
+        $this->helperProperties = array_merge($this->helperProperties, $properties);
     }
 }
